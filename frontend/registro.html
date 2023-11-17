@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Registro de Clientes</title>
+</head>
+<link rel="stylesheet" href="assets/css/stylespanel.css">
+<body>
+  <div class="container">
+    <h2>Registro de Clientes</h2>
+    
+    <!-- Formulario para agregar un nuevo cliente -->
+    <form id="addClientForm">
+      <div class="form-group">
+        <label for="clientName">Nombre del Cliente:</label>
+        <input type="text" id="clientName" required>
+      </div>
+      <button type="button" class="btn" onclick="addClient()">Agregar Cliente</button>
+    </form>
+
+    <!-- Lista de clientes -->
+    <ul id="clientList"></ul>
+  </div>
+
+
+
+  <script >
+
+document.addEventListener('DOMContentLoaded', function () {
+    // Cargar clientes existentes al cargar la página
+    loadClients();
+  });
+  
+  // Función para cargar clientes existentes
+  function loadClients() {
+    fetch('/clients')
+      .then(response => response.json())
+      .then(data => {
+        const clientList = document.getElementById('clientList');
+        clientList.innerHTML = '';
+  
+        data.forEach(client => {
+          const listItem = document.createElement('li');
+          listItem.textContent = client.name;
+  
+          // Botones para modificar y eliminar cada cliente
+          const editButton = document.createElement('button');
+          editButton.textContent = 'Editar';
+          editButton.addEventListener('click', () => editClient(client.id));
+  
+          const deleteButton = document.createElement('button');
+          deleteButton.textContent = 'Eliminar';
+          deleteButton.addEventListener('click', () => deleteClient(client.id));
+  
+          listItem.appendChild(editButton);
+          listItem.appendChild(deleteButton);
+  
+          clientList.appendChild(listItem);
+        });
+      })
+      .catch(error => console.error('Error:', error));
+  }
+  
+  // Función para agregar un nuevo cliente
+  function addClient() {
+    const clientName = document.getElementById('clientName').value;
+  
+    // Enviar la información del nuevo cliente al servidor para su almacenamiento
+    fetch('/clients', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ name: clientName }),
+    })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          // Recargar la lista de clientes después de agregar uno nuevo
+          loadClients();
+          // Limpiar el campo de entrada después de agregar el cliente
+          document.getElementById('clientName').value = '';
+        } else {
+          alert('Error al agregar el cliente. Por favor, inténtalo de nuevo.');
+        }
+      })
+      .catch(error => console.error('Error:', error));
+  }
+  
+  // Función para editar un cliente existente
+  function editClient(clientId) {
+    // Aquí puedes implementar la lógica para la edición del cliente
+    // Puedes utilizar un formulario similar al de agregar cliente
+    // y prellenarlo con la información del cliente seleccionado
+    function editClient(clientId) {
+  // Obtener el cliente seleccionado por su ID
+  const selectedClient = clients.find(client => client.id === clientId);
+
+  if (selectedClient) {
+    // Crear un formulario de edición
+    const editForm = document.createElement('form');
+    editForm.innerHTML = `
+      <label for="editClientName">Nombre del Cliente:</label>
+      <input type="text" id="editClientName" value="${selectedClient.name}" required>
+      <button type="button" onclick="updateClient(${clientId})">Guardar Cambios</button>
+    `;
+
+    // Mostrar el formulario en algún lugar de tu interfaz de usuario
+    // Por ejemplo, podrías agregarlo a un div existente con un ID específico
+    const editContainer = document.getElementById('editContainer');
+    editContainer.innerHTML = '';
+    editContainer.appendChild(editForm);
+  }
+}
+
+// Función para actualizar un cliente después de la edición
+function updateClient(clientId) {
+  const updatedName = document.getElementById('editClientName').value;
+
+  // Enviar la información actualizada al servidor para su almacenamiento
+  fetch(`/clients/${clientId}`, {
+    method: 'PUT', // Utilizar el método PUT para actualizar el recurso
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ name: updatedName }),
+  })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        // Recargar la lista de clientes después de la actualización
+        loadClients();
+        // Limpiar el contenedor de edición después de actualizar el cliente
+        const editContainer = document.getElementById('editContainer');
+        editContainer.innerHTML = '';
+      } else {
+        alert('Error al actualizar el cliente. Por favor, inténtalo de nuevo.');
+      }
+    })
+    .catch(error => console.error('Error:', error));
+}
+
+
+
+
+
+
+
+
+
+
+
+
+  }
+  
+  // Función para eliminar un cliente existente
+  function deleteClient(clientId) {
+    // Enviar la solicitud al servidor para eliminar el cliente
+    fetch(`/clients/${clientId}`, {
+      method: 'DELETE',
+    })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          // Recargar la lista de clientes después de eliminar uno
+          loadClients();
+        } else {
+          alert('Error al eliminar el cliente. Por favor, inténtalo de nuevo.');
+        }
+      })
+      .catch(error => console.error('Error:', error));
+  }
+  
+
+
+
+
+
+
+  </script>
+</body>
+</html>
